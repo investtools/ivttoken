@@ -1,15 +1,40 @@
-import { expect } from "chai"
-import { BigNumber } from "ethers"
-import { ethers } from "hardhat"
+const { expect } = require("chai");
+const { randomBytes } = require("crypto");
+const { ethers } = require("hardhat");
+const { TypedDataUtils } = require('ethers-eip712');
+
+import { signMessage, signMessages, getEthBalance, EIP712 } from '../util/signing-util'
+import { resolve } from "path";
+import { config as dotenvConfig } from "dotenv";
+
+dotenvConfig({ path: resolve(__dirname, "../.env") });
 
 const number = 10 ** 18
-const tokensToOperate = BigNumber.from(number.toString())
+const tokensToOperate = ethers.BigNumber.from(number.toString())
 
 describe("GigaToken", function () {
-    let hardhatToken
+    let hardhatToken, multisig
+    let owner, second, third, fourth, fifth, sixth, seventh, eighth, ninth
+    let ownerAddress, secondAddress, thirdAddress, fourthAddress, fifthAddress, sixthAddress, seventhAddress, eighthAddress, ninthAddress
+
+    this.beforeAll(async () => {
+        [ owner, second, third, fourth, fifth, sixth, seventh, eighth, ninth ] = await ethers.getSigners();
+        ownerAddress = await owner.getAddress();
+        secondAddress = await second.getAddress();
+        thirdAddress = await third.getAddress();
+        fourthAddress = await fourth.getAddress();
+        fifthAddress = await fifth.getAddress();
+        sixthAddress = await sixth.getAddress();
+        seventhAddress = await seventh.getAddress();
+        eighthAddress = await eighth.getAddress();
+        ninthAddress = await ninth.getAddress();
+    });
     this.beforeEach(async () => {
         const GigaToken = await ethers.getContractFactory("GigaToken")
         hardhatToken = await GigaToken.deploy()
+
+        const MultiSig = await ethers.getContractFactory("MultiSig")
+        multisig = await MultiSig.deploy(thirdAddress, fourthAddress)
     })
 
     it("Should test increase and decrease unlocked tokens", async function () {
@@ -44,17 +69,6 @@ describe("GigaToken", function () {
         expect(unlockedTokens).to.equal(0)
 
         expect(hardhatToken.transferFrom(walletAddress1, walletAddress2, tokensToOperate)).to.be.revertedWith("Not enough unlocked tokens")
-    })
-
-    it("Should test signatures", async function () {
-        const [addr1] = await ethers.getSigners()
-        const walletAddress1 = await addr1.getAddress()
-
-        const message = "lorem ipsum"
-        const messageHash = await hardhatToken.getMessageHash(message)
-        const signature = await addr1.signMessage(ethers.utils.arrayify(messageHash))
-
-        expect(await hardhatToken.verifyAddress(walletAddress1, message, signature)).to.true
     })
 
     it("Should mint a token", async function () {
@@ -206,31 +220,57 @@ describe("GigaToken", function () {
     })
 })
 
-describe("SideContract", function () {
-    let hardhatSideContract
-    let hardhatGigaToken
+describe("Multisig", function () {
+    let hardhatGigaToken, multisig
+    let owner, second, third, fourth, fifth, sixth, seventh, eighth, ninth
+    let ownerAddress, secondAddress, thirdAddress, fourthAddress, fifthAddress, sixthAddress, seventhAddress, eighthAddress, ninthAddress
+
+    this.beforeAll(async () => {
+        [ owner, second, third, fourth, fifth, sixth, seventh, eighth, ninth ] = await ethers.getSigners();
+        ownerAddress = await owner.getAddress();
+        secondAddress = await second.getAddress();
+        thirdAddress = await third.getAddress();
+        fourthAddress = await fourth.getAddress();
+        fifthAddress = await fifth.getAddress();
+        sixthAddress = await sixth.getAddress();
+        seventhAddress = await seventh.getAddress();
+        eighthAddress = await eighth.getAddress();
+        ninthAddress = await ninth.getAddress();
+    });
 
     this.beforeEach(async () => {
-        const SideContract = await ethers.getContractFactory("SideContract")
-        hardhatSideContract = await SideContract.deploy()
-        await hardhatSideContract.deployed()
+        const MultiSig = await ethers.getContractFactory("MultiSig")
+        multisig = await MultiSig.deploy(thirdAddress, fourthAddress)
+        await multisig.deployed()
 
         const GigaToken = await ethers.getContractFactory("GigaToken")
         hardhatGigaToken = await GigaToken.deploy()
         await hardhatGigaToken.deployed()
 
-        const minterRole = await hardhatGigaToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), hardhatSideContract.address)
+        const minterRole = await hardhatGigaToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), multisig.address)
         await minterRole.wait()
     })
 
     it("Should mint a token through GigaToken's contract", async function () {
-        const [addr1] = await ethers.getSigners()
-        const walletAddress1 = await addr1.getAddress()
 
-        const GigaTokenAddress = hardhatGigaToken.address
-        const setAddress = await hardhatSideContract.setAddressGigaToken(GigaTokenAddress)
-        setAddress.wait()
+        // get the mint function signature
+        const abi = ["function mint(address _to, uint256 _amount)"];
+        const iface = new ethers.utils.Interface(abi);
+        const calldata = iface.encodeFunctionData('mint', [ownerAddress, tokensToOperate]);
 
-        expect(await hardhatSideContract.gigaTokenMint(walletAddress1, tokensToOperate)).to.changeTokenBalance(hardhatGigaToken, walletAddress1, tokensToOperate)
+        // construct txn params to call a contract function
+        const nonce = ethers.utils.hexlify(ethers.utils.randomBytes(32));
+        const params = {
+            to: hardhatGigaToken.address,
+            value: '0',
+            data: ethers.utils.hexlify(calldata),
+            nonce: nonce
+        };
+
+        // create the array of signatures
+        const signatures = await signMessages([third, fourth], multisig.address, params);
+
+        expect(await multisig.connect(owner).executeTransaction(signatures, params.to, params.value, params.data, params.nonce)).to.changeTokenBalance(hardhatGigaToken, ownerAddress, tokensToOperate)
+        expect(multisig.connect(owner).executeTransaction(signatures, params.to, params.value, params.data, params.nonce)).to.be.revertedWith("Transaction has already been executed")
     })
 })
