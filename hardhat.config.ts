@@ -162,6 +162,12 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: {
         default: 0,
+    },
+    secondSigner: {
+        default: 1,
+    },
+    thirdSigner: {
+        default: 2,
     }
 },
   typechain: {
