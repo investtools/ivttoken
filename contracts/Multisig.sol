@@ -5,6 +5,10 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+/**
+ * @title MultiSig
+ * @dev Implements a multi-signature wallet. Transactions can be executed only when approved by a threshold number of signers.
+ */
 contract MultiSig is EIP712, ReentrancyGuard {
     using ECDSA for bytes32;
 
@@ -27,6 +31,11 @@ contract MultiSig is EIP712, ReentrancyGuard {
     mapping (bytes32 => bool) public executed;
     uint256 public threshold;
 
+    /**
+     * @dev Contract constructor. Sets the initial signers and threshold.
+     * @param _secondSigner The address of the second signer.
+     * @param _thirdSigner The address of the third signer.
+     */
     constructor(address _secondSigner, address _thirdSigner) EIP712("MultiSig", "1.0.0") {
         require(_secondSigner != address(0), "Second signer address cannot be the zero address");
         require(_thirdSigner != address(0), "Third signer address cannot be the zero address");
@@ -45,11 +54,16 @@ contract MultiSig is EIP712, ReentrancyGuard {
         isSigner[_thirdSigner] = true;
     }
 
+    /**
+     * @dev Allows the contract to receive funds.
+     */
     receive() external payable {}
 
-    // @dev - returns hash of data to be signed
-    // @param params - struct containing transaction data
-    // @return - packed hash that is to be signed
+    /**
+     * @dev Returns hash of data to be signed
+     * @param params The struct containing transaction data
+     * @return Packed hash that is to be signed
+     */
     function typedDataHash(TxnRequest memory params) public view returns (bytes32) {
         bytes32 digest = _hashTypedDataV4(
             keccak256(
@@ -65,11 +79,15 @@ contract MultiSig is EIP712, ReentrancyGuard {
         return digest;
     }
 
-    // @dev - util function to recover a signer given a signatures
-    // @param _to - to address of the transaction
-    // @param _value - transaction value
-    // @param _data - transaction calldata
-    // @param _nonce - transaction nonce
+    /**
+     * @dev Utility function to recover a signer given a signature
+     * @param _to The to address of the transaction
+     * @param _value Transaction value
+     * @param _data Transaction calldata
+     * @param _nonce Transaction nonce
+     * @param userSignature The signature provided by the user
+     * @return The address of the signer
+     */
     function recoverSigner(address _to, uint256 _value, bytes memory _data, bytes memory userSignature, bytes32 _nonce) public view returns (address) {
         TxnRequest memory params = TxnRequest({
             to: _to,
@@ -78,12 +96,13 @@ contract MultiSig is EIP712, ReentrancyGuard {
             nonce: _nonce
         });
         bytes32 digest = typedDataHash(params);
-        // console.logBytes32(digest);
         return ECDSA.recover(ECDSA.toEthSignedMessageHash(digest), userSignature);
     }
 
-    // @dev - addAdditionalOwners adds additional owners to the multisig
-    // @param _signer - address to be added to the signers list
+    /**
+     * @dev Adds additional owners to the multisig
+     * @param _signer The address to be added to the signers list
+     */
     function addAdditionalOwners(address _signer) public onlySigner {
         require(_signer != address(0), "Signer address cannot be the zero address");
         require(!isSigner[_signer], "Address is already a signer.");
@@ -94,7 +113,9 @@ contract MultiSig is EIP712, ReentrancyGuard {
         emit NewSigner(_signer);
     }
 
-    // @dev - resign removes owner from the multisig
+    /**
+     * @dev Allows a signer to resign, removing them from the multisig
+     */
     function resign() public onlySigner {
         require(signers.length > 2, "Cannot remove last 2 signers.");
         
@@ -116,12 +137,15 @@ contract MultiSig is EIP712, ReentrancyGuard {
         emit SignerRemoved(msg.sender);
     }
 
-    // @dev - Execute a multisig transaction given an array of signatures, and TxnRequest params
-    // @param signatures - array of signatures from multisig holders
-    // @param _to - address a transaction should be sent to
-    // @param _value - transaction value
-    // @param _data - data to be sent with the transaction (e.g: to call a contract function)
-    // @param _nonce - transaction nonce
+    /**
+     * @dev Executes a multisig transaction given an array of signatures, and TxnRequest params
+     * @param signatures The array of signatures from multisig holders
+     * @param _to The address a transaction should be sent to
+     * @param _value The transaction value
+     * @param _data The data to be sent with the transaction (e.g: to call a contract function)
+     * @param _nonce The transaction nonce
+     * @return The return data from the transaction call
+     */
     function executeTransaction(bytes[] memory signatures, address _to, uint256 _value, bytes memory _data, bytes32 _nonce) public onlySigner nonReentrant returns (bytes memory) {
         // require minimum # of signatures (m-of-n)
         require(signatures.length >= threshold, "Invalid number of signatures");
@@ -142,7 +166,7 @@ contract MultiSig is EIP712, ReentrancyGuard {
         require(!executed[digest], "Transaction has already been executed.");
 
         // get the signer of the message
-        verifySigners(signatures, digest);	
+        verifySigners(signatures, digest);    
 
         // execute transaction
         (bool success, bytes memory returndata) = txn.to.call{value: txn.value}(_data);
@@ -154,8 +178,10 @@ contract MultiSig is EIP712, ReentrancyGuard {
         return returndata;
     }
 
-    // @dev - change the threshold for the multisig
-    // @param _threshold - new threshold
+    /**
+     * @dev Changes the threshold for the multisig
+     * @param _threshold The new threshold
+     */
     function changeThreshold(uint _threshold) public onlySigner {
         require(_threshold <= signers.length, "Threshold cannot exceed number of signers.");
         require(_threshold >= 2, "Threshold cannot be < 2.");
@@ -164,14 +190,28 @@ contract MultiSig is EIP712, ReentrancyGuard {
         emit NewTheshold(threshold);
     }
 
+    /**
+     * @dev Returns the current number of signers.
+     * @return The number of signers
+     */
     function getOwnerCount() public view returns (uint256) {
         return signers.length;
     }
 
+    /**
+     * @dev Returns the current list of signers.
+     * @return The list of signers
+     */
     function getSigners() public view returns (address[] memory) {
         return signers;
     }
 
+    /**
+     * @dev Verifies if signers are part of the signers' list.
+     * @param signatures The list of signatures to be verified
+     * @param digest The hash of the transaction data
+     * @return A boolean indicating if all signers are valid
+     */
     function verifySigners(bytes[] memory signatures, bytes32 digest) public view returns (bool) {
         for (uint i = 0; i < threshold; i ++) {            
             // recover signer address
@@ -182,6 +222,9 @@ contract MultiSig is EIP712, ReentrancyGuard {
         return true;
     }
    
+    /**
+     * @dev Modifier to make a function callable only by a signer.
+     */
     modifier onlySigner() {
         require(isSigner[msg.sender], "Unauthorized signer.");
         _;
