@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-solhint";
 import "hardhat-abi-exporter";
 import "hardhat-deploy";
+import 'solidity-docgen';
 require('@typechain/hardhat')
 require('@nomiclabs/hardhat-ethers')
 // require('@nomiclabs/hardhat-waffle')
