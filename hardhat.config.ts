@@ -164,7 +164,7 @@ const config: HardhatUserConfig = {
         default: 0,
     },
     secondSigner: {
-        default: 1,
+        default: "73b1642f0597a0288a52c568617e0b9ea8774f41edc1a4b4fb5358560ff73d9c",
     },
     thirdSigner: {
         default: 2,

@@ -19,7 +19,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const multisigDeployment = await deployments.get(CONTRACTS.multisig)
     const verifierDeployment = await deployments.get(CONTRACTS.verifier)
 
+    let secondAddress = secondSigner;
+    let thirdAddress = thirdSigner;
+    
     if (network.chainId !== CONFIGURATION.hardhatChainId) {
+        secondAddress = CONFIGURATION.secondSignerAddress;
+        thirdAddress = CONFIGURATION.thirdSignerAddress;
+
         try {
             console.log("Sleepin' for 30 seconds to wait for the chain to be ready...")
             await delay(30e3) // 30 seconds delay to allow the network to be synced
@@ -44,7 +50,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             await delay(30e3) // 30 seconds delay to allow the network to be synced
             await hre.run("verify:verify", {
                 address: multisigDeployment.address,
-                constructorArguments: [secondSigner, thirdSigner]
+                constructorArguments: [secondAddress, thirdAddress]
             })
             console.log("Verified -- Multisig")
         } catch (error) {

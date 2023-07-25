@@ -165,8 +165,11 @@ npx hardhat clean
 ## Deployments
 
 ### Mainnet
-TBD
+- GigaToken: [0xd8e40ccd8bcb4e5994b79a094f6f39e7a9d1b4aa](https://polygonscan.com/address/0xd8e40ccd8bcb4e5994b79a094f6f39e7a9d1b4aa#code)
+- Multisig: [0xe1c9cdb52c9759204fda541976d15b3d6f67b546](https://polygonscan.com/address/0xe1c9cdb52c9759204fda541976d15b3d6f67b546#code)
+- Verifier: [0x8f2bec657241eb98a89012ecbe24b13be3ef8db8](https://polygonscan.com/address/0x8f2bec657241eb98a89012ecbe24b13be3ef8db8#code)
 
 ### Mumbai Testnet
-- GigaToken: [0x95c1eeB593f530937f3DE2A8eF2fE3cf725B9241](https://explorer-mumbai.maticvigil.com/address/0x95c1eeB593f530937f3DE2A8eF2fE3cf725B9241/contracts)
-- SideContract: [0x7B819Be6aE96956bDEca8d5dEa188Ae721319989](https://explorer-mumbai.maticvigil.com/address/0x7B819Be6aE96956bDEca8d5dEa188Ae721319989/contracts)
+- GigaToken: [0x8CBC04668981e3f7901D46CB56611611545B7A6D](https://mumbai.polygonscan.com/address/0x8CBC04668981e3f7901D46CB56611611545B7A6D#code)
+- Multisig: [0x685a13093cA561F531c93185B942a3f33385e14E](https://mumbai.polygonscan.com/address/0x685a13093cA561F531c93185B942a3f33385e14E#code)
+- Verifier: [0xD5E253Ff866a342D4227c71eB90263713A79A04b](https://mumbai.polygonscan.com/address/0xD5E253Ff866a342D4227c71eB90263713A79A04b#code)
