@@ -164,6 +164,9 @@ npx hardhat clean
 
 ## Deployments
 
+### Auditory
+- [Solidproof](https://github.com/solidproof/projects/blob/main/2023/Giga/SmartContract_Audit_Solidproof_Giga.pdf)
+
 ### Mainnet
 - GigaToken: [0xd8e40ccd8bcb4e5994b79a094f6f39e7a9d1b4aa](https://polygonscan.com/address/0xd8e40ccd8bcb4e5994b79a094f6f39e7a9d1b4aa#code)
 - Multisig: [0xe1c9cdb52c9759204fda541976d15b3d6f67b546](https://polygonscan.com/address/0xe1c9cdb52c9759204fda541976d15b3d6f67b546#code)
