@@ -58,6 +58,12 @@ jobs:
         id: deploy
         run: npx hardhat deploy --network polygonMumbai
 
+      # Upload artifacts if tests pass
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: hardhat-artifacts
+          path: artifacts/
 
       # Update DEPLOYMENTS.md with addresses from artifacts
       - name: Update DEPLOYMENTS.md from artifacts
