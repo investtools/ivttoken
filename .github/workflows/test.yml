@@ -80,8 +80,6 @@ jobs:
             echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> DEPLOYMENTS.md
           done
 
-            # ... (previous steps)
-
       # Commit the updated DEPLOYMENTS.md to a new branch
       - name: Commit to a new branch and create PR
         env:
@@ -101,6 +99,8 @@ jobs:
           git push origin $BRANCH_NAME
           
           # Create a pull request using GitHub API
-          PR_DATA=$(echo -n '{"title":"Update DEPLOYMENTS.md with new contract addresses","head":"'$BRANCH_NAME'","base":"main"}' | base64)
-          curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/investtools/ivttoken/pulls --data-binary "@$PR_DATA"
-
+          curl -s -X POST \
+               -H "Authorization: token $GITHUB_TOKEN" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -d '{"title":"Update DEPLOYMENTS.md with new contract addresses","head":"'$BRANCH_NAME'","base":"main"}' \
+               https://api.github.com/repos/investtools/ivttoken/pulls
