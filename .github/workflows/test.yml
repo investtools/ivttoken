@@ -60,7 +60,7 @@ jobs:
           echo "$OUTPUT"
           echo "::set-output name=deploy-output::$OUTPUT"
 
-      # Update deployments.md with new addresses
+      # Update DEPLOYMENTS.md with new addresses
       - name: Update DEPLOYMENTS.md
         run: |
           OUTPUT="${{ steps.deploy.outputs.deploy-output }}"
@@ -81,7 +81,7 @@ jobs:
 
             # ... (previous steps)
 
-      # Commit the updated deployments.md to a new branch
+      # Commit the updated DEPLOYMENTS.md to a new branch
       - name: Commit to a new branch and create PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,11 +95,11 @@ jobs:
           git checkout -b $BRANCH_NAME
           
           # Commit and push the changes
-          git add deployments.md
-          git commit -m "Update deployments.md with new contract addresses"
+          git add DEPLOYMENTS.md
+          git commit -m "Update DEPLOYMENTS.md with new contract addresses"
           git push origin $BRANCH_NAME
           
           # Create a pull request using GitHub API
-          PR_DATA=$(echo -n '{"title":"Update deployments.md with new contract addresses","head":"'$BRANCH_NAME'","base":"main"}' | base64)
+          PR_DATA=$(echo -n '{"title":"Update DEPLOYMENTS.md with new contract addresses","head":"'$BRANCH_NAME'","base":"main"}' | base64)
           curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/investtools/ivttoken/pulls --data-binary "@$PR_DATA"
 
