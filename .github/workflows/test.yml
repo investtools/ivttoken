@@ -76,7 +76,7 @@ jobs:
       # Unzip artifacts if tests pass
       - name: Unzip hardhat artifacts
         run: |
-          unzip ./downloaded-artifacts/hardhat_artifacts.zip -d ./unzipped-artifacts
+          unzip ./downloaded-artifacts/hardhat-artifacts.zip -d ./unzipped-artifacts
 
 
       # Update DEPLOYMENTS.md if tests pass
