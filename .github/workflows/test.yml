@@ -58,27 +58,37 @@ jobs:
         id: deploy
         run: npx hardhat deploy --network polygonMumbai
 
+
       # Update DEPLOYMENTS.md with addresses from artifacts
       - name: Update DEPLOYMENTS.md from artifacts
         run: |
           echo "## Deployments on Polygon Mumbai" > DEPLOYMENTS.md
           echo "" >> DEPLOYMENTS.md
           
-          # Navigate to the artifacts directory
-          cd artifacts
-          
-          # For each contract JSON file, extract the address for Polygon Mumbai
-          for FILE in *.json; do
-            CONTRACT_NAME=$(basename "$FILE" .json)
-            # Assuming the network ID for Polygon Mumbai is 80001 (change if different)
-            CONTRACT_ADDRESS=$(jq '.networks."80001".address' $FILE)
-            if [ "$CONTRACT_ADDRESS" != "null" ]; then
-              echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> ../DEPLOYMENTS.md
-            fi
-          done
-          
-          # Navigate back to the root directory
-          cd ..
+          # Ensure we're in the root directory of the project
+          cd $GITHUB_WORKSPACE
+
+          # Check if the artifacts directory exists and contains JSON files
+          if [ -d "artifacts" ] && [ "$(ls -A artifacts/*.json)" ]; then
+            # Navigate to the artifacts directory
+            cd artifacts
+            
+            # For each contract JSON file, extract the address for Polygon Mumbai
+            for FILE in *.json; do
+              CONTRACT_NAME=$(basename "$FILE" .json)
+              # Assuming the network ID for Polygon Mumbai is 80001 (change if different)
+              CONTRACT_ADDRESS=$(jq '.networks."80001".address' $FILE)
+              if [ "$CONTRACT_ADDRESS" != "null" ]; then
+                echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> ../DEPLOYMENTS.md
+              fi
+            done
+            
+            # Navigate back to the root directory
+            cd ..
+          else
+            echo "Artifacts directory not found or doesn't contain any JSON files." >> DEPLOYMENTS.md
+          fi
+
 
 
       # Commit the updated DEPLOYMENTS.md to a new branch
