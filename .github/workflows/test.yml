@@ -74,12 +74,8 @@ jobs:
           path: ./downloaded-artifacts
 
       # List downloaded artifacts if tests pass
-      - name: List downloaded artifacts (absolute)
-        run: ls /home/runner/work/ivttoken/ivttoken
-
-      # List downloaded artifacts if tests pass
       - name: List downloaded artifacts (relative)
-        run: ls 
+        run: ls artifacts/
 
       # Unzip artifacts if tests pass
       - name: Unzip hardhat artifacts
