@@ -28,6 +28,7 @@ jobs:
           echo "DEPLOYER_PK=${{ secrets.DEPLOYER_PK }}" >> .env
           echo "TOKEN_OWNER_PK=${{ secrets.TOKEN_OWNER_PK }}" >> .env
           echo "PROD_DEPLOYER_PK=${{ secrets.PROD_DEPLOYER_PK }}" >> .env
+          echo "POLYGONSCAN_API_KEY=${{ secrets.POLYGONSCAN_API_KEY }}" >> .env
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
