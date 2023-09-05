@@ -46,6 +46,44 @@ jobs:
       - name: Run tests
         run: npx hardhat test
 
+      # # Deploy to Polygon Mumbai if tests pass
+      # - name: Deploy to Polygon Mumbai
+      #   run: npx hardhat deploy --network polygonMumbai
+
+      # ... (previous steps)
+
       # Deploy to Polygon Mumbai if tests pass
       - name: Deploy to Polygon Mumbai
-        run: npx hardhat deploy --network polygonMumbai
+        id: deploy
+        run: |
+          OUTPUT=$(npx hardhat deploy --network polygonMumbai)
+          echo "$OUTPUT"
+          echo "::set-output name=deploy-output::$OUTPUT"
+
+      # Update deployments.md with new addresses
+      - name: Update DEPLOYMENTS.md
+        run: |
+          OUTPUT="${{ steps.deploy.outputs.deploy-output }}"
+          echo "## Deployments on Polygon Mumbai" >> DEPLOYMENTS.md
+          echo "\n" >> DEPLOYMENTS.md
+          # Handle "reusing" output format
+          echo "$OUTPUT" | grep "reusing" | while read -r line ; do
+            CONTRACT_NAME=$(echo $line | awk -F'"' '{print $2}')
+            CONTRACT_ADDRESS=$(echo $line | awk '{print $NF}')
+            echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> DEPLOYMENTS.md
+          done
+          # Handle "deploying" output format
+          echo "$OUTPUT" | grep "deploying" | while read -r line ; do
+            CONTRACT_NAME=$(echo $line | awk -F'"' '{print $2}')
+            CONTRACT_ADDRESS=$(echo $line | awk '{print $10}')
+            echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> DEPLOYMENTS.md
+          done
+
+      # Commit and push the updated deployments.md
+      - name: Commit and push DEPLOYMENTS.md
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add DEPLOYMENTS.md
+          git commit -m "Update DEPLOYMENTS.md with new contract addresses"
+          git push
