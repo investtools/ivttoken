@@ -47,60 +47,29 @@ jobs:
       - name: Run tests
         run: npx hardhat test
 
-      # # Deploy to Polygon Mumbai if tests pass
-      # - name: Deploy to Polygon Mumbai
-      #   run: npx hardhat deploy --network polygonMumbai
-
-      # ... (previous steps)
-
       # Deploy to Polygon Mumbai if tests pass
       - name: Deploy to Polygon Mumbai
         id: deploy
         run: npx hardhat deploy --network polygonMumbai
 
-      # Upload artifacts if tests pass
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: hardhat-artifacts
-          path: artifacts/
-
-
-      # Download artifacts if tests pass
-      - name: Download hardhat artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: hardhat-artifacts
-          path: ./downloaded-artifacts
-
-      # List downloaded artifacts if tests pass
-      - name: List downloaded artifacts (relative)
-        run: ls artifacts/
-
-      # Unzip artifacts if tests pass
-      - name: Unzip hardhat artifacts
-        run: |
-          unzip /home/runner/work/ivttoken/ivttoken/downloaded-artifacts/hardhat-artifacts.zip -d ./unzipped-artifacts
-
-
-      # Update DEPLOYMENTS.md if tests pass
       - name: Update DEPLOYMENTS.md from artifacts
         run: |
           echo "## Deployments on Polygon Mumbai" > DEPLOYMENTS.md
           echo "" >> DEPLOYMENTS.md
           
-          ARTIFACTS_DIR="./unzipped-artifacts/contracts"
+          ARTIFACTS_DIR="./artifacts/contracts"
 
           # Check if the artifacts directory exists and contains JSON files
-          if [ -d "$ARTIFACTS_DIR" ] && [ "$(ls -A $ARTIFACTS_DIR/*.json)" ]; then
+          if [ -d "$ARTIFACTS_DIR" ]; then
             # Navigate to the artifacts directory
             cd $ARTIFACTS_DIR
             
-            # For each contract JSON file, extract the address for Polygon Mumbai
-            for FILE in *.json; do
-              CONTRACT_NAME=$(basename "$FILE" .json)
+            # For each contract directory, extract the address for Polygon Mumbai
+            for CONTRACT_DIR in */; do
+              CONTRACT_NAME=$(basename "$CONTRACT_DIR" .sol)
+              JSON_FILE="$CONTRACT_DIR$CONTRACT_NAME.json"
               # Assuming the network ID for Polygon Mumbai is 80001 (change if different)
-              CONTRACT_ADDRESS=$(jq '.networks."80001".address' $FILE)
+              CONTRACT_ADDRESS=$(jq '.networks."80001".address' $JSON_FILE)
               if [ "$CONTRACT_ADDRESS" != "null" ]; then
                 echo "- **$CONTRACT_NAME**: $CONTRACT_ADDRESS" >> ../../DEPLOYMENTS.md
               fi
@@ -111,7 +80,7 @@ jobs:
           else
             echo "Artifacts directory not found or doesn't contain any JSON files." >> DEPLOYMENTS.md
           fi
-
+      
 
       # Commit the updated DEPLOYMENTS.md to a new branch
       - name: Commit to a new branch and create PR
