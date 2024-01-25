@@ -15,6 +15,20 @@ This Privacy Policy applies to the smart contracts developed and deployed by Inv
 
 - **No Collection of Personal Information:** Our smart contracts do not collect, store, or process any personal information from users. Users interact with the smart contracts using their blockchain wallet addresses.
 
+## GDPR Compliance
+
+- **Scope and Applicability:** The General Data Protection Regulation (GDPR) applies to entities operating within the EU and to those offering goods or services to individuals in the EU. Our smart contracts are designed to be compliant with GDPR provisions.
+- **Data Processing Activities:** Although our smart contracts do not directly collect personal data, we ensure that any indirect processing of personal data complies with GDPR principles, including lawfulness, fairness, and transparency.
+- **User Rights:** Under GDPR, users have rights such as access, rectification, erasure, and data portability. We facilitate these rights in respect to any data that may indirectly be linked to personal identifiers.
+- **Data Protection Officer:** For GDPR-related inquiries, users can contact our Data Protection Officer at dpo@investtools.com.br.
+
+## LGPD Compliance
+
+- **Brazilian Data Protection:** The Lei Geral de Proteção de Dados (LGPD) is Brazil's data protection law. Our smart contracts respect LGPD principles in operations that may affect Brazilian users.
+- **Data Processing under LGPD:** We adhere to LGPD's guidelines on processing personal data, ensuring lawful, fair, and transparent processing while respecting the rights of data subjects.
+- **User Rights Under LGPD:** In line with LGPD, users have rights such as confirmation of data processing, access to data, correction of inaccurate data, and anonymization or deletion of unnecessary data. We commit to assisting users in exercising these rights.
+- **Contact for LGPD Matters:** Queries related to LGPD compliance can be addressed to lgpd@investtools.com.br.
+
 ## Security and Transparency
 
 - **Smart Contract Security:** We prioritize the security of our smart contracts and employ best practices in smart contract development and auditing.
@@ -28,4 +42,4 @@ We may update our Privacy Policy from time to time. We encourage you to review t
 
 If you have any questions about this Privacy Policy, please contact us at marco@investtools.com.br.
 
-_Last Updated: 12/11/2023_
+_Last Updated: 01/25/2024_
